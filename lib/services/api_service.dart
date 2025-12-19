@@ -22,7 +22,7 @@ class ApiService {
     return response.statusCode == 200;
   }
 
-  // LISTADO DE PLATOS
+  // LISTADO DE PRODUCTOS
   static Future<List<Plato>> fetchPlatos() async {
     final response = await http.get(
       Uri.parse('$baseUrl/platos'),
