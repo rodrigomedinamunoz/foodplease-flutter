@@ -12,35 +12,38 @@ class _LoginScreenState extends State<LoginScreen> {
   final passController = TextEditingController();
   String error = '';
   bool loading = false;
+  
+	  void login() async {
+	  FocusScope.of(context).unfocus();
 
-  void login() async {
-    FocusScope.of(context).unfocus();
+	  setState(() {
+		loading = true;
+		error = '';
+	  });
 
-    setState(() {
-      loading = true;
-      error = '';
-    });
+	  final result = await ApiService.login(
+		userController.text,
+		passController.text,
+	  );
 
-    bool success = await ApiService.login(
-      userController.text,
-      passController.text,
-    );
+	  setState(() {
+		loading = false;
+	  });
 
-    setState(() {
-      loading = false;
-    });
+	  if (result == null) {
+		Navigator.pushReplacement(
+		  context,
+		  MaterialPageRoute(builder: (_) => PlatosScreen()),
+		);
+	  } else {
+		setState(() {
+		  error = result;
+		});
+	  }
+	}
 
-    if (success) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => PlatosScreen()),
-      );
-    } else {
-      setState(() {
-        error = 'Usuario o contraseña incorrectos';
-      });
-    }
-  }
+
+
 
   @override
   Widget build(BuildContext context) {

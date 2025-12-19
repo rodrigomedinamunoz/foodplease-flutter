@@ -6,21 +6,28 @@ class ApiService {
   static const String baseUrl =
       'https://web-production-ee57f.up.railway.app';
 
-  // LOGIN REAL
-  static Future<bool> login(String username, String password) async {
+  static Future<String?> login(String user, String pass) async {
+  try {
     final response = await http.post(
-      Uri.parse('$baseUrl/login'),
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      Uri.parse('https://web-production-ee57f.up.railway.app/login'),
+      headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
-        'username': username,
-        'password': password,
+        'username': user,
+        'password': pass,
       }),
     );
 
-    return response.statusCode == 200;
+    if (response.statusCode == 200) {
+      return null; // éxito
+    } else if (response.statusCode == 401) {
+      return 'Usuario o contraseña incorrectos';
+    } else {
+      return 'Error del servidor';
+    }
+  } catch (e) {
+    return 'No se pudo conectar con el servidor';
   }
+}
 
   // LISTADO DE PRODUCTOS
   static Future<List<Plato>> fetchPlatos() async {
