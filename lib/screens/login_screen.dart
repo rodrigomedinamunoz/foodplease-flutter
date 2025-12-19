@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import '../services/api_service.dart';
 import 'platos_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -12,57 +11,41 @@ class _LoginScreenState extends State<LoginScreen> {
   final userController = TextEditingController();
   final passController = TextEditingController();
   String error = '';
-  
-	  Future<void> login() async {
-	  FocusScope.of(context).unfocus();
+  bool loading = false;
 
-	  setState(() {
-		error = '';
-	  });
+  void login() async {
+    FocusScope.of(context).unfocus();
 
-	  try {
-		final response = await http.post(
-		  Uri.parse('https://web-production-ee57f.up.railway.app/login'),
-		  headers: {
-			'Content-Type': 'application/json',
-		  },
-		  body: jsonEncode({
-			'username': userController.text,
-			'password': passController.text,
-		  }),
-		);
+    setState(() {
+      loading = true;
+      error = '';
+    });
 
-		if (response.statusCode == 200) {
-		  final data = jsonDecode(response.body);
+    bool success = await ApiService.login(
+      userController.text,
+      passController.text,
+    );
 
-		  if (data['success'] == true) {
-			Navigator.pushReplacement(
-			  context,
-			  MaterialPageRoute(builder: (_) => PlatosScreen()),
-			);
-		  } else {
-			setState(() {
-			  error = data['message'] ?? 'Credenciales incorrectas';
-			});
-		  }
-		} else {
-		  setState(() {
-			error = 'Error de servidor (${response.statusCode})';
-		  });
-		}
-	  } catch (e) {
-		setState(() {
-		  error = 'No se pudo conectar con el servidor';
-		});
-	  }
-	}
+    setState(() {
+      loading = false;
+    });
 
-
+    if (success) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => PlatosScreen()),
+      );
+    } else {
+      setState(() {
+        error = 'Usuario o contraseña incorrectos';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView( 
+      body: SingleChildScrollView(
         child: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -81,8 +64,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 16),
                     const Text(
                       'FoodPlease',
-                      style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          fontSize: 24, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 24),
                     TextField(
@@ -101,7 +84,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         prefixIcon: Icon(Icons.lock),
                       ),
                     ),
-
                     if (error.isNotEmpty) ...[
                       const SizedBox(height: 12),
                       Text(
@@ -109,13 +91,16 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: const TextStyle(color: Colors.red),
                       ),
                     ],
-
                     const SizedBox(height: 24),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: login,
-                        child: const Text('Ingresar'),
+                        onPressed: loading ? null : login,
+                        child: loading
+                            ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                            : const Text('Ingresar'),
                       ),
                     ),
                   ],
